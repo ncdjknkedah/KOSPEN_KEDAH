@@ -316,7 +316,7 @@
         if(!filteredData || filteredData.length === 0) return;
         let dKeys = getDynamicKeys(filteredData[0]);
         document.getElementById('stat-total').innerText = filteredData.length;
-        document.getElementById('stat-aktif').innerText = filteredData.filter(i => { let s = (i["STATUS"]||"").toUpperCase(); return s.includes("KEKAL")||s.includes("BARU"); }).length;
+        document.getElementById('stat-aktif').innerText = filteredData.filter(i => { let s = (i["STATUS"]||"").toUpperCase(); return s.includes("AKTIF")||s.includes("BARU"); }).length;
         document.getElementById('stat-vol').innerText = filteredData.reduce((s, i) => s + (Number(i[dKeys.vol])||0), 0).toLocaleString('ms-MY');
         document.getElementById('stat-pop').innerText = filteredData.reduce((s, i) => s + (Number(i[dKeys.pop])||0), 0).toLocaleString('ms-MY');
         document.getElementById('stat-pop18').innerText = filteredData.reduce((s, i) => s + (Number(i[dKeys.pop18])||0), 0).toLocaleString('ms-MY');
@@ -337,7 +337,7 @@
                     let mapLat = parseFloat(matches[0]); let mapLng = parseFloat(matches[1]);
                     if (!isNaN(mapLat) && !isNaN(mapLng) && mapLat > 0 && mapLng > 90) {
                         let rowStatus = (row['STATUS'] || "").toUpperCase();
-                        let nodeColor = (rowStatus.includes("KEKAL") || rowStatus.includes("BARU")) ? '#2563eb' : '#dc2626';
+                        let nodeColor = (rowStatus.includes("AKTIF") || rowStatus.includes("BARU")) ? '#2563eb' : '#dc2626';
                         let locationMarker = L.circleMarker([mapLat, mapLng], { radius: 8, fillColor: nodeColor, color: "#ffffff", weight: 2, opacity: 1, fillOpacity: 0.9 }).addTo(leafletMap);
                         locationMarker.bindTooltip(`<div class="text-center px-1"><span class="fw-bold d-block text-primary" style="white-space:nowrap">${row['LOKALITI KOSPEN']}</span><span class="small d-block text-muted border-top pt-1 mt-1">${row['DAERAH']}</span></div>`, { direction: 'top', className: 'shadow-sm rounded' });
                         locationMarker.on('click', function() { openProfileModal(row['LOKALITI KOSPEN']); });
@@ -359,7 +359,7 @@
         document.getElementById('modal-daerah').innerHTML = `<i class="fas fa-map-pin me-2 text-danger opacity-75"></i> ` + (rowData['DAERAH'] || '-');
         document.getElementById('modal-tahun').innerText = rowData['TAHUN PENUBUHAN'] || '-';
         let statusVal = (rowData['STATUS'] || "").toUpperCase();
-        let badgeStyle = (statusVal.includes("KEKAL") || statusVal.includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
+        let badgeStyle = (statusVal.includes("AKTIF") || statusVal.includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
         document.getElementById('modal-status').innerHTML = `<span class="badge ${badgeStyle} px-4 py-2 lh-base fs-6 shadow-sm border rounded-pill">${statusVal || '-'}</span>`;
         document.getElementById('modal-penduduk').innerText = (rowData[dKeys.pop] || 0).toLocaleString('ms-MY');
         document.getElementById('modal-penduduk18').innerText = (rowData[dKeys.pop18] || 0).toLocaleString('ms-MY');
@@ -400,7 +400,7 @@
                 columns: [
                     { data: 'DAERAH', className: 'align-middle fw-semibold text-secondary' }, { data: 'LOKALITI KOSPEN', className: 'align-middle fw-bold text-dark' }, { data: 'TAHUN PENUBUHAN', className: 'align-middle text-center d-none d-md-table-cell' }, { data: 'NAMA PENGERUSI', className: 'align-middle d-none d-md-table-cell' },
                     { data: 'STATUS', className: 'align-middle text-center', render: function(val) {
-                            let bClass = ((val||"").toUpperCase().includes("KEKAL") || (val||"").toUpperCase().includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
+                            let bClass = ((val||"").toUpperCase().includes("AKTIF") || (val||"").toUpperCase().includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
                             return `<span class="badge ${bClass} px-3 py-2 lh-base shadow-sm">${val || '-'}</span>`;
                     }},
                     { data: null, orderable: false, className: 'align-middle text-center', render: function(row) {
