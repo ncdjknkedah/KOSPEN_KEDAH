@@ -5,10 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KOSPEN Kedah Monitoring Dashboard</title>
     
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- DataTables & FontAwesome CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Leaflet Peta CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
     <style>
         :root {
@@ -23,6 +29,7 @@
             color: #1e293b;
         }
 
+        /* Sidebar Styling */
         .sidebar { 
             background: var(--primary-color); 
             min-height: 100vh; 
@@ -36,6 +43,7 @@
             border-radius: 8px;
             margin: 5px 15px;
             transition: 0.3s;
+            cursor: pointer;
         }
 
         .nav-link:hover, .nav-link.active { 
@@ -43,6 +51,7 @@
             background: rgba(255,255,255,0.1); 
         }
 
+        /* Cards & Containers */
         .card-stat { 
             border: none; 
             border-radius: 16px; 
@@ -60,211 +69,262 @@
             box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
         }
 
+        /* Badges & Extra Styles */
         .badge-aktif { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .badge-tidak-aktif { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .icon-box { min-width: 50px; text-align: center; }
+        
+        /* Loader */
         .loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.8); display: flex; justify-content: center;
             align-items: center; z-index: 9999;
         }
 
-        /* Responsive utilities */
-        .icon-box { min-width: 50px; text-align: center; }
+        /* Custom Leaflet Map Container */
+        #osmMap {
+            border-radius: 16px;
+            height: 75vh;
+            width: 100%;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
 
 <div id="loader" class="loading-overlay">
     <div class="spinner-border text-primary" role="status"></div>
-    <span class="ms-3">Memuatkan Data KOSPEN...</span>
+    <span class="ms-3 fw-semibold">Memuatkan Data KOSPEN Terbaru...</span>
 </div>
 
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar -->
+        <!-- Sidebar Navigation -->
         <nav class="col-md-2 d-none d-md-block sidebar">
             <div class="text-center mb-4">
-                <i class="fas fa-heartbeat fa-3x text-info mb-2"></i>
-                <h5 class="fw-bold">KOSPEN KEDAH</h5>
+                <i class="fas fa-heartbeat fa-3x text-info mb-2 text-shadow"></i>
+                <h5 class="fw-bold tracking-tight">KOSPEN KEDAH</h5>
             </div>
             <ul class="nav flex-column mt-4">
-                <li class="nav-item"><a href="#" class="nav-link active"><i class="fas fa-chart-line me-2"></i> Utama</a></li>
-                <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-map-marked-alt me-2"></i> Lokaliti</a></li>
-                <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-users me-2"></i> Penyelaras</a></li>
+                <li class="nav-item">
+                    <a class="nav-link active" id="btn-nav-utama" onclick="switchTab('utama')">
+                        <i class="fas fa-chart-line me-2"></i> Dashboard Utama
+                    </a>
+                </li>
+                <li class="nav-item mt-2">
+                    <a class="nav-link" id="btn-nav-lokaliti" onclick="switchTab('lokaliti')">
+                        <i class="fas fa-map-marked-alt me-2"></i> Peta Lokaliti
+                    </a>
+                </li>
+                <li class="nav-item mt-2">
+                    <a class="nav-link text-muted" style="cursor: not-allowed;" aria-disabled="true">
+                        <i class="fas fa-users-cog me-2"></i> Penyelaras (Bina)
+                    </a>
+                </li>
             </ul>
         </nav>
 
-        <!-- Main Content -->
+        <!-- Main Content Area -->
         <main class="col-md-10 ms-sm-auto px-md-4 py-4">
             
-            <!-- Header & Filter -->
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-                <div>
-                    <h2 class="fw-bold mb-1">Dashboard Pemantauan</h2>
-                    <span class="text-muted"><i class="far fa-calendar-alt"></i> Kemaskini Automatik</span>
+            <!-- BAHAGIAN 1: TAB UTAMA (Dashboard) -->
+            <div id="view-utama">
+                <!-- Header & Dropdown Filter -->
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <div>
+                        <h2 class="fw-bold mb-1">Dashboard Pemantauan</h2>
+                        <span class="text-muted"><i class="far fa-calendar-check me-1"></i> Data Dikemaskini Automatik Secara Semasa</span>
+                    </div>
+                    
+                    <div class="col-md-4 col-lg-3">
+                        <select id="daerahFilter" class="form-select form-select-lg shadow-sm border-2 border-primary fw-semibold text-primary">
+                            <option value="">🎯 SEMUA DAERAH</option>
+                            <!-- Pilihan Daerah Dinamik Dijana Oleh JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Kad Statistik Dinamik (7 Kad) -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card card-stat bg-white h-100 border-top border-primary border-4">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box p-3 bg-primary bg-opacity-10 rounded-3 me-3">
+                                    <i class="fas fa-hospital-user fa-lg text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0 small text-uppercase">Jumlah Lokaliti</h6>
+                                    <h4 class="fw-bold mb-0" id="stat-total">-</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card card-stat bg-white h-100 border-top border-success border-4">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box p-3 bg-success bg-opacity-10 rounded-3 me-3">
+                                    <i class="fas fa-check-circle fa-lg text-success"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0 small text-uppercase">Lokaliti Aktif</h6>
+                                    <h4 class="fw-bold mb-0" id="stat-aktif">-</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card card-stat bg-white h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box p-3 bg-warning bg-opacity-10 rounded-3 me-3">
+                                    <i class="fas fa-hands-helping fa-lg text-warning"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0 small text-uppercase">Sukarelawan</h6>
+                                    <h4 class="fw-bold mb-0" id="stat-vol">-</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card card-stat bg-white h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box p-3 bg-info bg-opacity-10 rounded-3 me-3">
+                                    <i class="fas fa-users fa-lg text-info"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0 small text-uppercase">Penduduk (Semasa)</h6>
+                                    <h4 class="fw-bold mb-0" id="stat-pop">-</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-4">
+                        <div class="card card-stat bg-white h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box p-3 bg-secondary bg-opacity-10 rounded-3 me-3">
+                                    <i class="fas fa-user-check fa-lg text-secondary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0 small text-uppercase">Penduduk &gt; 18 THN</h6>
+                                    <h4 class="fw-bold mb-0" id="stat-pop18">-</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-4">
+                        <div class="card card-stat bg-white h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box p-3 bg-danger bg-opacity-10 rounded-3 me-3">
+                                    <i class="fas fa-home fa-lg text-danger"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0 small text-uppercase">Rumah Berpenghuni</h6>
+                                    <h4 class="fw-bold mb-0" id="stat-house">-</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-12 col-lg-4">
+                        <div class="card card-stat bg-white h-100 border-top border-dark border-4">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box p-3 bg-dark bg-opacity-10 rounded-3 me-3">
+                                    <i class="fas fa-shield-virus fa-lg text-dark"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0 small text-uppercase">Rumah RBAR</h6>
+                                    <h4 class="fw-bold mb-0" id="stat-rbar">-</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datatable Container -->
+                <div class="table-container mb-5 border-top border-primary border-4">
+                    <h5 class="fw-bold mb-4 text-dark">Direktori & Pangkalan Data Lokaliti KOSPEN</h5>
+                    <table id="mainTable" class="table table-hover w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th>DAERAH</th>
+                                <th>NAMA LOKALITI</th>
+                                <th>TAHUN</th>
+                                <th>PENGERUSI</th>
+                                <th>STATUS</th>
+                                <th class="text-center">TINDAKAN</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div> <!-- End Tab Utama -->
+
+
+            <!-- BAHAGIAN 2: TAB PETA LOKALITI -->
+            <div id="view-lokaliti" style="display: none;">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-3">
+                    <div>
+                        <h2 class="fw-bold mb-1"><i class="fas fa-map-marked-alt text-primary me-2"></i> Peta Taburan Lokaliti KOSPEN</h2>
+                        <span class="text-muted">Klik pada penanda (<i class="fas fa-circle text-primary"></i>) di atas peta untuk lihat Profil Penuh. Sila ambil maklum bahawa lokaliti tanpa koordinat tidak dapat diplotkan ruangnya.</span>
+                    </div>
+                    <span class="badge bg-primary px-4 py-2 fs-6 shadow-sm rounded-pill" id="map-counter">
+                        <i class="fas fa-spinner fa-spin me-1"></i> Memuatkan...
+                    </span>
                 </div>
                 
-                <div class="col-md-4 col-lg-3">
-                    <select id="daerahFilter" class="form-select form-select-lg shadow-sm border-0 fw-semibold text-primary">
-                        <option value="">🎯 SEMUA DAERAH</option>
-                        <!-- Pilihan Daerah Dinamik -->
-                    </select>
+                <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-5 border-top border-primary border-4">
+                    <div id="osmMap"></div>
+                    <div class="bg-light p-3 text-center small text-muted">
+                        <i class="fas fa-info-circle me-1"></i> Navigasi: Tatal (Scroll) untuk membesarkan ruang demografi peta. Penanda Biru (Aktif/Baru), Penanda Merah (Gugur/Tidak Aktif/KIV).
+                    </div>
                 </div>
-            </div>
+            </div> <!-- End Tab Peta -->
 
-            <!-- Kad Statistik Tambahan (7 Kad) -->
-            <div class="row g-3 mb-4">
-                <div class="col-6 col-md-4 col-lg-3">
-                    <div class="card card-stat bg-white h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-primary bg-opacity-10 rounded-3 me-3">
-                                <i class="fas fa-hospital-user fa-lg text-primary"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small text-uppercase">Jumlah Lokaliti</h6>
-                                <h4 class="fw-bold mb-0" id="stat-total">-</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-3">
-                    <div class="card card-stat bg-white h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-success bg-opacity-10 rounded-3 me-3">
-                                <i class="fas fa-check-circle fa-lg text-success"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small text-uppercase">Lokaliti Aktif</h6>
-                                <h4 class="fw-bold mb-0" id="stat-aktif">-</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-3">
-                    <div class="card card-stat bg-white h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-warning bg-opacity-10 rounded-3 me-3">
-                                <i class="fas fa-hands-helping fa-lg text-warning"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small text-uppercase">Sukarelawan</h6>
-                                <h4 class="fw-bold mb-0" id="stat-vol">-</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-3">
-                    <div class="card card-stat bg-white h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-info bg-opacity-10 rounded-3 me-3">
-                                <i class="fas fa-users fa-lg text-info"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small text-uppercase">Penduduk (Semasa)</h6>
-                                <h4 class="fw-bold mb-0" id="stat-pop">-</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-4">
-                    <div class="card card-stat bg-white h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-secondary bg-opacity-10 rounded-3 me-3">
-                                <i class="fas fa-user-check fa-lg text-secondary"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small text-uppercase">Penduduk &gt; 18 THN</h6>
-                                <h4 class="fw-bold mb-0" id="stat-pop18">-</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-4">
-                    <div class="card card-stat bg-white h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-danger bg-opacity-10 rounded-3 me-3">
-                                <i class="fas fa-home fa-lg text-danger"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small text-uppercase">Rumah Berpenghuni</h6>
-                                <h4 class="fw-bold mb-0" id="stat-house">-</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-md-12 col-lg-4">
-                    <div class="card card-stat bg-white h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-dark bg-opacity-10 rounded-3 me-3">
-                                <i class="fas fa-shield-virus fa-lg text-dark"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted mb-0 small text-uppercase">Rumah RBAR</h6>
-                                <h4 class="fw-bold mb-0" id="stat-rbar">-</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Table -->
-            <div class="table-container mb-5">
-                <h5 class="fw-bold mb-4">Pangkalan Data Lokaliti KOSPEN</h5>
-                <table id="mainTable" class="table table-hover w-100">
-                    <thead>
-                        <tr>
-                            <th>DAERAH</th>
-                            <th>NAMA LOKALITI</th>
-                            <th>TAHUN PENUBUHAN</th>
-                            <th>PENGERUSI</th>
-                            <th>STATUS</th>
-                            <th>TINDAKAN</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                    </tbody>
-                </table>
-            </div>
-            
-            <p class="text-center text-muted small mt-4 mb-2">Dibangunkan khusus untuk JKN Kedah - Program KOSPEN</p>
+            <p class="text-center text-muted small mt-4 mb-2">Sistem Dashboard KOSPEN Peringkat JKN Kedah</p>
         </main>
     </div>
 </div>
 
-<!-- Bootstrap Modal Untuk Profil Detail -->
+<!-- ==============================================
+     Bootstrap Modal Khas Carian & Paparan Profil 
+     ============================================== -->
 <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header bg-primary text-white border-0">
-        <h5 class="modal-title fw-bold" id="detailModalLabel"><i class="fas fa-file-medical-alt me-2"></i> Profil Lokaliti KOSPEN</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title fw-bold fs-5" id="detailModalLabel"><i class="fas fa-file-medical-alt me-2"></i> Profil Lokaliti Komuniti</h5>
+        <button type="button" class="btn-close btn-close-white shadow-sm" data-bs-dismiss="modal" aria-label="Tutup"></button>
       </div>
-      <div class="modal-body p-4 text-dark">
+      <div class="modal-body p-4 text-dark bg-white">
         <div class="row mb-4">
-          <!-- Info Utama -->
-          <div class="col-md-7 mb-3 mb-md-0 border-end">
-            <h6 class="text-muted mb-1 text-uppercase small">Nama Lokaliti</h6>
-            <h4 class="fw-bold mb-3 text-primary" id="modal-lokaliti">-</h4>
-            
-            <h6 class="text-muted mb-1 text-uppercase small">Nama Pengerusi</h6>
-            <p class="fw-semibold mb-3 fs-5" id="modal-pengerusi">-</p>
-            
-            <h6 class="text-muted mb-1 text-uppercase small">Daerah</h6>
-            <p class="fw-semibold mb-0" id="modal-daerah">-</p>
+          <!-- Info Teras -->
+          <div class="col-md-7 mb-4 mb-md-0 border-end">
+            <div class="bg-light rounded p-3 h-100">
+                <h6 class="text-primary mb-1 text-uppercase small fw-bold">Nama Lokaliti Berafiliasi</h6>
+                <h4 class="fw-bold mb-4 text-dark" id="modal-lokaliti">-</h4>
+                
+                <h6 class="text-muted mb-1 text-uppercase small">Nama Pengerusi</h6>
+                <p class="fw-bold text-dark fs-6" id="modal-pengerusi"><i class="fas fa-user-circle me-1"></i> -</p>
+                
+                <h6 class="text-muted mb-1 mt-3 text-uppercase small">Daerah / Wilayah</h6>
+                <p class="fw-bold text-dark mb-0 fs-6" id="modal-daerah"><i class="fas fa-map-pin me-1"></i> -</p>
+            </div>
           </div>
           
-          <!-- Status Info -->
-          <div class="col-md-5">
-             <h6 class="text-muted mb-1 text-uppercase small">Status</h6>
-             <div class="mb-3" id="modal-status">-</div>
-             
-             <h6 class="text-muted mb-1 text-uppercase small">Tahun Penubuhan</h6>
-             <p class="fw-semibold mb-0" id="modal-tahun">-</p>
+          <!-- Status Pendaftaran -->
+          <div class="col-md-5 d-flex flex-column justify-content-center">
+             <div class="p-3 text-center">
+                 <h6 class="text-muted mb-2 text-uppercase small fw-semibold">Status Lokaliti</h6>
+                 <div class="mb-4" id="modal-status">-</div>
+                 
+                 <h6 class="text-muted mb-1 text-uppercase small fw-semibold">Tahun Penubuhan</h6>
+                 <p class="fw-bold text-dark fs-4 mb-0" id="modal-tahun">-</p>
+             </div>
           </div>
         </div>
         
-        <!-- Statistik Setempat -->
-        <h6 class="fw-bold border-bottom pb-2 mb-3 mt-4 text-secondary">Statistik Setempat Lokaliti</h6>
+        <!-- Statistik Setempat Dalam Modal -->
+        <h6 class="fw-bold border-bottom pb-2 mb-3 mt-4 text-secondary text-uppercase small">Demografi Kawasan Sedia Ada</h6>
         <div class="row text-center mb-4">
             <div class="col-6 col-md-2 mb-3">
                 <div class="p-2 bg-info bg-opacity-10 rounded shadow-sm border border-info border-opacity-25 h-100">
@@ -286,7 +346,7 @@
             </div>
             <div class="col-4 col-md-3 mb-3">
                 <div class="p-2 bg-danger bg-opacity-10 rounded shadow-sm border border-danger border-opacity-25 h-100">
-                    <div class="small fw-semibold text-danger mb-1">Rmh Berpenghuni</div>
+                    <div class="small fw-semibold text-danger mb-1">Berpenghuni</div>
                     <div class="fw-bold fs-5 text-dark" id="modal-rumah">-</div>
                 </div>
             </div>
@@ -298,10 +358,10 @@
             </div>
         </div>
         
-        <!-- Peta Butang -->
-        <div class="d-grid mt-3">
+        <!-- Tindakan Koordinat Luar -->
+        <div class="d-grid mt-3 px-2">
             <a id="modal-map-btn" href="#" target="_blank" class="btn btn-outline-success btn-lg fw-bold shadow-sm">
-                <i class="fas fa-map-marker-alt me-2"></i> Buka Google Maps
+                Buka Aplikasi Google Maps
             </a>
         </div>
 
@@ -310,20 +370,129 @@
   </div>
 </div>
 
+<!-- Semua Skrip dan Pustaka Berkaitan -->
 <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Leaflet JS untuk Peta -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script>
-    // GANTIKAN URL DI BAWAH DENGAN WEB APP URL ANDA
-    const apiURL = "https://script.google.com/macros/s/AKfycbwQCzkjq4cKlgsQq1BXWzZUPHMuYE7cdfB4J_WOrhgK23IzmENEtvnITuWCIrCEHrifbQ/exec";
+    // 1. MASUKKAN URL NEW DEPLOYMENT ANDA DI BAWAH (PENTING!)
+    const apiURL = "https://script.google.com/macros/s/AKfycbzYvf7hi2-vaav8eHVtKb1VqAcp4eR6Ta4VFTu-Ai8r2fdMh8MUo023NNHDGKSSRN5iWw/exec";
     
     let allData = [];
     let table;
     let detailModal;
+    
+    // Variabel Penjagaan Skrin Peta Leaflet
+    let leafletMap;
+    let mapInitialized = false;
 
+    // ==========================================
+    // Fungsi Menukar Tab Halaman (Dashboard >< Peta)
+    // ==========================================
+    function switchTab(viewId) {
+        // Alih warna menu sidebar
+        document.getElementById('btn-nav-utama').classList.remove('active');
+        document.getElementById('btn-nav-lokaliti').classList.remove('active');
+        document.getElementById(`btn-nav-${viewId}`).classList.add('active');
+
+        // Tukar Konten 
+        if(viewId === 'utama') {
+            document.getElementById('view-utama').style.display = 'block';
+            document.getElementById('view-lokaliti').style.display = 'none';
+        } else {
+            document.getElementById('view-utama').style.display = 'none';
+            document.getElementById('view-lokaliti').style.display = 'block';
+            
+            // Generate Map buat pertama kali jika belum di load
+            if(!mapInitialized) {
+                initLeafletMap();
+                mapInitialized = true;
+            } else {
+                // Leaflet perlukan ini untuk atasi bug kelabu peta apabila tukar skrin
+                setTimeout(() => leafletMap.invalidateSize(), 300);
+            }
+        }
+    }
+
+    // ==========================================
+    // Fungsi Penjanaan Peta Kedah & Plot Marker
+    // ==========================================
+    function initLeafletMap() {
+        // Fokus Pada Koordinat Tengah Kedah, Zoom 9 (Skala Negeri)
+        leafletMap = L.map('osmMap', { zoomControl: true }).setView([6.124500, 100.416200], 9);
+        
+        // Pilih Paparan Base Layer (Satelit OpenStreetMap - Telah Siap Ada Sempadan Awam)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: 'Data Peta &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+        }).addTo(leafletMap);
+
+        let plottedMarkersCount = 0;
+
+        // Loop rekod untuk tanam jarum ke atas peta
+        allData.forEach(row => {
+            let latText = (row['LATLONG'] || "").toString().trim();
+            if (latText !== "") {
+                
+                // Pembaikpulih ralat kesilapan manusia . menjadi ,
+                if (latText.includes(".100.")) { latText = latText.replace(".100.", ", 100."); }
+                if (latText.includes(".101.")) { latText = latText.replace(".101.", ", 101."); }
+                if (latText.includes(" 100.")) { latText = latText.replace(" 100.", ", 100."); }
+                if (latText.includes(" 101.")) { latText = latText.replace(" 101.", ", 101."); }
+                
+                let coordinateParts = latText.split(',');
+                if (coordinateParts.length >= 2) {
+                    let mapLat = parseFloat(coordinateParts[0].trim());
+                    let mapLng = parseFloat(coordinateParts[1].trim());
+
+                    if (!isNaN(mapLat) && !isNaN(mapLng)) {
+                        let rowStatus = (row['STATUS'] || "").toUpperCase();
+                        let isAktifBaru = rowStatus.includes("KEKAL") || rowStatus.includes("BARU");
+                        let nodeColor = isAktifBaru ? '#2563eb' : '#dc2626'; // Biru untuk KEKAL/BARU, Merah untuk lain
+                        
+                        // Menjana marker Bulatan Pintar (Mudah Dilihat)
+                        let locationMarker = L.circleMarker([mapLat, mapLng], {
+                            radius: 8,
+                            fillColor: nodeColor,
+                            color: "#ffffff",
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.9
+                        }).addTo(leafletMap);
+
+                        // Skrin mini automatik di atas marker bila tetikus letak di atas map pointer
+                        locationMarker.bindTooltip(
+                            `<div class="text-center px-1">
+                                <span class="fw-bold d-block text-primary">${row['LOKALITI KOSPEN']}</span>
+                                <span class="small d-block text-muted border-top pt-1 mt-1">${row['DAERAH']}</span>
+                             </div>`, 
+                            { direction: 'top', className: 'shadow-sm rounded' }
+                        );
+
+                        // Menghubungkan klik map marker dengan fungsi modal butang Detail Utama!
+                        locationMarker.on('click', function() {
+                            openProfileModal(row['LOKALITI KOSPEN']);
+                        });
+                        
+                        plottedMarkersCount++;
+                    }
+                }
+            }
+        });
+
+        document.getElementById('map-counter').innerHTML = `<i class="fas fa-check-circle me-1"></i> ${plottedMarkersCount} Lokaliti Disusun Atur Diatas Peta`;
+        
+        // Redraw jika saiz berubah secara mengejut
+        setTimeout(() => leafletMap.invalidateSize(), 500);
+    }
+
+    // ==========================================
     // Fungsi Kiraan & Kemaskini Semua 7 Kad Statistik
+    // ==========================================
     function updateStats(filteredData) {
         document.getElementById('stat-total').innerText = filteredData.length;
         
@@ -349,98 +518,103 @@
         document.getElementById('stat-rbar').innerText = rumahRbar.toLocaleString('ms-MY');
     }
 
-    // Fungsi Papar Modal
+    // ==========================================
+    // Fungsi Paparan Modal Terperinci
+    // ==========================================
     function openProfileModal(namaLokaliti) {
-        const row = allData.find(item => item["LOKALITI KOSPEN"] === namaLokaliti);
-        if(!row) return;
+        // Cari padanan nama di dalam memori allData
+        const rowData = allData.find(item => item["LOKALITI KOSPEN"] === namaLokaliti);
+        if(!rowData) return;
 
         // Populate Teks
-        document.getElementById('modal-lokaliti').innerText = row['LOKALITI KOSPEN'] || '-';
-        document.getElementById('modal-pengerusi').innerText = row['NAMA PENGERUSI'] || '-';
-        document.getElementById('modal-daerah').innerText = row['DAERAH'] || '-';
-        document.getElementById('modal-tahun').innerText = row['TAHUN PENUBUHAN'] || '-';
+        document.getElementById('modal-lokaliti').innerText = rowData['LOKALITI KOSPEN'] || '-';
+        document.getElementById('modal-pengerusi').innerHTML = `<i class="fas fa-user-circle me-2 text-primary opacity-75"></i> ` + (rowData['NAMA PENGERUSI'] || '-');
+        document.getElementById('modal-daerah').innerHTML = `<i class="fas fa-map-pin me-2 text-danger opacity-75"></i> ` + (rowData['DAERAH'] || '-');
+        document.getElementById('modal-tahun').innerText = rowData['TAHUN PENUBUHAN'] || '-';
         
-        // Populate Kad Statistik
-        document.getElementById('modal-penduduk').innerText = (row['BILANGAN PENDUDUK (SEMASA)'] || 0).toLocaleString('ms-MY');
-        document.getElementById('modal-penduduk18').innerText = (row['BILANGAN PENDUDUK >18'] || 0).toLocaleString('ms-MY');
-        document.getElementById('modal-sukarelawan').innerText = (row['BILANGAN SUKARELAWAN'] || 0).toLocaleString('ms-MY');
-        document.getElementById('modal-rumah').innerText = (row['BIL RUMAH BERPENGHUNI LOKALITI KOSPEN'] || 0).toLocaleString('ms-MY');
-        document.getElementById('modal-rbar').innerText = (row['BILANGAN RUMAH DIISYTIHAR (RBAR)'] || 0).toLocaleString('ms-MY');
+        // Populate Kad Statistik Modal
+        document.getElementById('modal-penduduk').innerText = (rowData['BILANGAN PENDUDUK (SEMASA)'] || 0).toLocaleString('ms-MY');
+        document.getElementById('modal-penduduk18').innerText = (rowData['BILANGAN PENDUDUK >18'] || 0).toLocaleString('ms-MY');
+        document.getElementById('modal-sukarelawan').innerText = (rowData['BILANGAN SUKARELAWAN'] || 0).toLocaleString('ms-MY');
+        document.getElementById('modal-rumah').innerText = (rowData['BIL RUMAH BERPENGHUNI LOKALITI KOSPEN'] || 0).toLocaleString('ms-MY');
+        document.getElementById('modal-rbar').innerText = (rowData['BILANGAN RUMAH DIISYTIHAR (RBAR)'] || 0).toLocaleString('ms-MY');
         
-        // Populate Status Badge Dalam Modal
-        let status = (row['STATUS'] || "").toUpperCase();
-        let badgeClass = (status.includes("KEKAL") || status.includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
-        document.getElementById('modal-status').innerHTML = `<span class="badge ${badgeClass} px-3 py-2 lh-base fs-6">${status || '-'}</span>`;
+        // Warna Status Kad Dalam Modal
+        let statusVal = (rowData['STATUS'] || "").toUpperCase();
+        let badgeStyle = (statusVal.includes("KEKAL") || statusVal.includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
+        document.getElementById('modal-status').innerHTML = `<span class="badge ${badgeStyle} px-4 py-3 lh-base fs-6 shadow-sm border rounded-pill">${statusVal || '-'}</span>`;
 
-        // Aturan Koordinat & Pautan Google Maps
-        const latLong = (row['LATLONG'] || "").toString().trim();
-        const mapBtn = document.getElementById('modal-map-btn');
+        // Aturan Koordinat Luaran & Pautan Google Maps Klasik
+        const coordinateRaw = (rowData['LATLONG'] || "").toString().trim();
+        const mapExternalLinkBtn = document.getElementById('modal-map-btn');
         
-        if (latLong !== "") {
-            // Betulkan ralat manusia yang kadangkala isi titik "." berbanding "," untuk memisahkan Latitud dan Longitud
-            // Terutama untuk Malaysia, longitud selalunya 100/101.
-            var searchStr = latLong;
-            if (searchStr.includes(".100.")) { searchStr = searchStr.replace(".100.", ", 100."); }
-            if (searchStr.includes(".101.")) { searchStr = searchStr.replace(".101.", ", 101."); }
-            if (searchStr.includes(" 100.")) { searchStr = searchStr.replace(" 100.", ", 100."); }
+        if (coordinateRaw !== "") {
+            var searchString = coordinateRaw;
+            if (searchString.includes(".100.")) { searchString = searchString.replace(".100.", ", 100."); }
+            if (searchString.includes(".101.")) { searchString = searchString.replace(".101.", ", 101."); }
+            if (searchString.includes(" 100.")) { searchString = searchString.replace(" 100.", ", 100."); }
+            if (searchString.includes(" 101.")) { searchString = searchString.replace(" 101.", ", 101."); }
             
-            mapBtn.href = `https://www.google.com/maps?q=${encodeURIComponent(searchStr)}`;
-            mapBtn.className = "btn btn-outline-success btn-lg fw-bold shadow-sm";
-            mapBtn.innerHTML = `<i class="fas fa-map-marker-alt me-2 text-success"></i> Buka Geotag Lokasi Peta`;
+            mapExternalLinkBtn.href = `https://www.google.com/maps?q=${encodeURIComponent(searchString)}`;
+            mapExternalLinkBtn.className = "btn btn-outline-success w-100 btn-lg fw-bold shadow-sm rounded-3 mt-1";
+            mapExternalLinkBtn.innerHTML = `<i class="fas fa-external-link-alt me-2 text-success"></i> Buka Halatuju Koordinat Di Aplikasi Map`;
         } else {
-            // Kosong - Carian Manual
-            const carianManual = `${row['LOKALITI KOSPEN']}, ${row['DAERAH']}, Kedah`;
-            mapBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(carianManual)}`;
-            mapBtn.className = "btn btn-outline-secondary btn-lg fw-bold shadow-sm";
-            mapBtn.innerHTML = `<i class="fas fa-search-location me-2 text-secondary"></i> Cari Lokasi di Peta`;
+            const fallbackQuery = `${rowData['LOKALITI KOSPEN']}, ${rowData['DAERAH']}, Kedah`;
+            mapExternalLinkBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fallbackQuery)}`;
+            mapExternalLinkBtn.className = "btn btn-light w-100 btn-lg text-secondary fw-bold shadow-sm border rounded-3 mt-1";
+            mapExternalLinkBtn.innerHTML = `<i class="fas fa-search-location opacity-50 me-2"></i> Aplikasi Map (Koordinat Tiada Dalam Rujukan)`;
         }
         
         detailModal.show();
     }
 
-    // Fungsi Utama: Memuat Turun Data
+    // ==========================================
+    // Tarik HTTP/Web App Permulaan API Google Sheet
+    // ==========================================
     async function loadData() {
         try {
             const response = await fetch(apiURL);
             allData = await response.json();
             
-            // Kemaskini Semua 7 Kad Untuk Semasa (Semua Data)
+            // Populasi 7 Kad Berdsarkan Keseluruhan Data Negeri
             updateStats(allData);
 
-            // Populate Pilihan Dropdown Penapis DAERAH
-            const filterEl = document.getElementById('daerahFilter');
-            const daerahList = [...new Set(allData.map(item => item["DAERAH"]))].filter(d => Boolean(d) && d.trim() !== "").sort();
-            daerahList.forEach(daerah => {
-                let opt = document.createElement('option');
-                opt.value = daerah;
-                opt.innerHTML = daerah;
-                filterEl.appendChild(opt);
+            // Bina Senarai Menu Dropdown Filter Automatik Menjejaki DAERAH di Sheet
+            const filterDropdown = document.getElementById('daerahFilter');
+            const cleanDaerahArray = [...new Set(allData.map(item => item["DAERAH"]))].filter(d => Boolean(d) && d.trim() !== "").sort();
+            
+            cleanDaerahArray.forEach(namaDrh => {
+                let opsiBaru = document.createElement('option');
+                opsiBaru.value = namaDrh;
+                opsiBaru.innerHTML = `<span class="fw-semibold">${namaDrh}</span>`;
+                filterDropdown.appendChild(opsiBaru);
             });
 
-            // Inisialisasi DataTable
+            // Kuasakan Core JQuery DataTables
             table = $('#mainTable').DataTable({
                 data: allData,
                 columns: [
-                    { data: 'DAERAH' },
-                    { data: 'LOKALITI KOSPEN' },
-                    { data: 'TAHUN PENUBUHAN' },
-                    { data: 'NAMA PENGERUSI' },
+                    { data: 'DAERAH', className: 'align-middle fw-semibold text-secondary' },
+                    { data: 'LOKALITI KOSPEN', className: 'align-middle fw-bold text-dark' },
+                    { data: 'TAHUN PENUBUHAN', className: 'align-middle text-center' },
+                    { data: 'NAMA PENGERUSI', className: 'align-middle' },
                     { 
                         data: 'STATUS',
+                        className: 'align-middle text-center',
                         render: function(val) {
-                            let status = (val || "").toUpperCase();
-                            let badgeClass = (status.includes("KEKAL") || status.includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
-                            return `<span class="badge ${badgeClass} px-3 py-2">${val || '-'}</span>`;
+                            let statusText = (val || "").toUpperCase();
+                            let bClass = (statusText.includes("KEKAL") || statusText.includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
+                            return `<span class="badge ${bClass} px-3 py-2 lh-base shadow-sm">${val || '-'}</span>`;
                         }
                     },
                     { 
                         data: null,
                         orderable: false,
+                        className: 'align-middle text-center',
                         render: function(row) {
-                            // Menghantar key Nama Lokaliti unik
-                            const safeName = encodeURIComponent(row['LOKALITI KOSPEN']);
-                            return `<button class="btn btn-sm btn-outline-primary fw-bold shadow-sm btn-detail" data-lokaliti="${safeName}">
-                                      <i class="fas fa-search me-1"></i> Detail
+                            const encodeLok = encodeURIComponent(row['LOKALITI KOSPEN']);
+                            return `<button class="btn btn-sm btn-outline-primary fw-bold shadow-sm custom-detail-btn px-3" data-name="${encodeLok}">
+                                      <i class="fas fa-expand-arrows-alt me-1"></i> Profil
                                     </button>`;
                         }
                     }
@@ -448,29 +622,28 @@
                 responsive: true,
                 language: {
                     url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/ms.json",
-                    search: "Carian Pantas:",
+                    search: "Carian Direktori Pantas:",
+                    lengthMenu: "Papar _MENU_ direktori lokaliti",
                 }
             });
 
-            // Tangkap Klik 'Detail' Pada Jadual
-            $('#mainTable tbody').on('click', '.btn-detail', function () {
-                const lokasi = decodeURIComponent($(this).data('lokaliti'));
-                openProfileModal(lokasi);
+            // Event Listener Untuk Butang Profil Pada Datatables
+            $('#mainTable tbody').on('click', '.custom-detail-btn', function () {
+                const decLokasi = decodeURIComponent($(this).data('name'));
+                openProfileModal(decLokasi);
             });
 
-            // Tangkap Pertukaran Dropdown DAERAH
-            filterEl.addEventListener('change', function() {
-                const selected = this.value;
-                if (selected === "") {
-                    // Tunjuk Semua
+            // Action Pertukaran Penapis Kepada Dropdown DAERAH
+            filterDropdown.addEventListener('change', function() {
+                const pihan = this.value;
+                if (pihan === "") {
+                    // Carian Lalai Tanpa Carian Spesifik
                     table.column(0).search('').draw();
                     updateStats(allData);
                 } else {
-                    // Tapis Tepat Pada Column 'DAERAH' Menggunakan Regex (^Daerah Match$)
-                    table.column(0).search('^' + selected + '$', true, false).draw();
-                    
-                    const filteredData = allData.filter(item => item["DAERAH"] === selected);
-                    updateStats(filteredData);
+                    table.column(0).search('^' + pihan + '$', true, false).draw();
+                    const filterAktiviti = allData.filter(item => item["DAERAH"] === pihan);
+                    updateStats(filterAktiviti);
                 }
             });
 
@@ -478,7 +651,7 @@
 
         } catch (error) {
             console.error("Gagal memuatkan data:", error);
-            alert("Ralat memuatkan data. Sila pastikan URL API di Kod JS HTML telah diperbaharui seperti deploy GS anda.");
+            alert("Amaran Ralat: Web App URL di dalam Fail ini tidak dapat dihubung untuk memanggil Google Sheet anda. Sila betulkan API/Deploy Baru.");
             document.getElementById('loader').style.display = 'none';
         }
     }
