@@ -42,10 +42,12 @@
 <div class="container-fluid">
     <div class="row">
         <nav class="col-md-2 d-none d-md-block sidebar">
+            <!-- LOGO KOSPEN TELAH DIKEKALKAN -->
             <div class="text-center mb-4">
                 <img src="https://yt3.googleusercontent.com/y1toYDVt_y97oJ1Uw2hY3glSHbDhfNe8tR5zL9XJYpKiaICGBuHeWA2GGSSZ8y1iBb6VE1qxRg=s160-c-k-c0x00ffffff-no-rj" alt="Logo KOSPEN" style="width: 85px; height: 85px; object-fit: contain;" class="mb-3 bg-white rounded-circle p-2 shadow-lg">
                 <h5 class="fw-bold tracking-tight">KOSPEN KEDAH</h5>
             </div>
+            
             <ul class="nav flex-column mt-4">
                 <li class="nav-item">
                     <a class="nav-link active" id="btn-nav-utama" onclick="switchTab('utama')">
@@ -71,7 +73,7 @@
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                     <div>
                         <h2 class="fw-bold mb-1">Dashboard Pemantauan</h2>
-                        <span class="text-muted"><i class="far fa-calendar-check me-1"></i> Mengambil kira Integrasi Penyelaras</span>
+                        <span class="text-muted"><i class="far fa-calendar-check me-1"></i> Paparan Prestasi Aplikasi Optimum</span>
                     </div>
                     
                     <div class="col-md-4 col-lg-3">
@@ -81,7 +83,7 @@
                     </div>
                 </div>
 
-                <!-- Kad Statistik -->
+                <!-- Kad Statistik Dinamik -->
                 <div class="row g-3 mb-4">
                     <div class="col-6 col-md-4 col-lg-3">
                         <div class="card card-stat bg-white h-100 border-top border-primary border-4">
@@ -159,7 +161,6 @@
                 </div>
             </div>
 
-
             <!-- TAB PETA LOKALITI -->
             <div id="view-lokaliti" style="display: none;">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-3">
@@ -181,7 +182,7 @@
 </div>
 
 <!-- ==============================================
-     MODAL PROFIL (Kini Mengandungi Info Penyelaras) 
+     MODAL PROFIL (Lebih Nipis Dan Pantas)
      ============================================== -->
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -206,22 +207,14 @@
             </div>
           </div>
           
-          <!-- Status Pendaftaran & Penyelaras -->
+          <!-- Status Pendaftaran -->
           <div class="col-md-5 d-flex flex-column justify-content-center">
              <div class="p-3 text-center">
                  <h6 class="text-muted mb-1 text-uppercase small fw-semibold">Status Pendaftaran</h6>
                  <div class="mb-3" id="modal-status">-</div>
                  
                  <h6 class="text-muted mb-1 text-uppercase small fw-semibold">Tahun Penubuhan</h6>
-                 <p class="fw-bold text-dark fs-5 mb-4" id="modal-tahun">-</p>
-                 
-                 <div class="border-top pt-3">
-                     <h6 class="text-muted mx-auto mb-1 text-uppercase small fw-semibold" style="max-width:200px">PPKP Daerah</h6>
-                     <p class="fw-bold text-primary fs-6 mb-3" id="modal-ppkp">-</p>
-                     
-                     <h6 class="text-muted mx-auto mb-1 text-uppercase small fw-semibold" style="max-width:200px">Pegawai Perpaduan Daerah</h6>
-                     <p class="fw-bold text-success fs-6 mb-0" id="modal-perpaduan">-</p>
-                 </div>
+                 <p class="fw-bold text-dark fs-5 mb-0" id="modal-tahun">-</p>
              </div>
           </div>
         </div>
@@ -252,11 +245,10 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script>
-    // 1. MASUKKAN URL NEW DEPLOYMENT (V4) DI BAWAH
-    const apiURL = "https://script.google.com/macros/s/AKfycbwOmB1YFy0JyOIP1mInoiWpSjJsuwosHDHrVCDTaCmyjrph8R6GiIB6KXWkzMNPqWbuFg/exec";
+    // MASUKKAN URL NEW DEPLOYMENT (PANTAS) DI BAWAH
+    const apiURL = "https://script.google.com/macros/s/AKfycbxb4cTlDAx0cVWskAVPjLbJrgDAq0ss0kpWvghqRmn2ifgOzetTjMj3aE0RxD9LU3Pi-Q/exec";
     
     let allData = [];
-    let penyelarasData = [];
     let table;
     let detailModal;
     
@@ -328,7 +320,7 @@
         document.getElementById('stat-rbar').innerText = filteredData.reduce((s, i) => s + (Number(i["BILANGAN RUMAH DIISYTIHAR (RBAR)"])||0), 0).toLocaleString('ms-MY');
     }
 
-    // FUNGSI MODAL DENGAN PENYELARAS
+    // FUNGSI MODAL PANTAS
     function openProfileModal(namaLokaliti) {
         const rowData = allData.find(item => item["LOKALITI KOSPEN"] === namaLokaliti);
         if(!rowData) return;
@@ -343,33 +335,14 @@
         let badgeStyle = (statusVal.includes("KEKAL") || statusVal.includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
         document.getElementById('modal-status').innerHTML = `<span class="badge ${badgeStyle} px-4 py-2 lh-base fs-6 shadow-sm border rounded-pill">${statusVal || '-'}</span>`;
 
-        // Integrasi Penyelaras Menggunakan Carian "DAERAH"
-        let p Daerah = rowData['DAERAH'] || "";
-        let valPPKP = rowData['PENYELARAS DAERAH (PPKP KOSPEN)'] || "-"; // Fallback dari sheet asal
-        let valPerpaduan = "-";
-
-        if(penyelarasData && penyelarasData.length > 0) {
-            let rowPenyelaras = penyelarasData.find(p => (p['DAERAH'] || "").toUpperCase().trim() === pDaerah.toUpperCase().trim());
-            if(rowPenyelaras) {
-                let keysArr = Object.keys(rowPenyelaras);
-                
-                // Cari nama kolum yang mengandungi kunci perkataan PPKP / PERPADUAN
-                let kPPKP = keysArr.find(k => k.includes("PPKP"));
-                let kPerpaduan = keysArr.find(k => k.includes("PERPADUAN") || k.includes("PEGAWAI"));
-                
-                if(kPPKP && rowPenyelaras[kPPKP]) valPPKP = rowPenyelaras[kPPKP];
-                if(kPerpaduan && rowPenyelaras[kPerpaduan]) valPerpaduan = rowPenyelaras[kPerpaduan];
-            }
-        }
-        document.getElementById('modal-ppkp').innerText = valPPKP;
-        document.getElementById('modal-perpaduan').innerText = valPerpaduan;
-
         // Kad Statistik Modal
         document.getElementById('modal-penduduk').innerText = (rowData['BILANGAN PENDUDUK (SEMASA)'] || 0).toLocaleString('ms-MY');
         document.getElementById('modal-penduduk18').innerText = (rowData['BILANGAN PENDUDUK >18'] || 0).toLocaleString('ms-MY');
         document.getElementById('modal-sukarelawan').innerText = (rowData['BILANGAN SUKARELAWAN'] || 0).toLocaleString('ms-MY');
         document.getElementById('modal-rumah').innerText = (rowData['BIL RUMAH BERPENGHUNI LOKALITI KOSPEN'] || 0).toLocaleString('ms-MY');
         document.getElementById('modal-rbar').innerText = (rowData['BILANGAN RUMAH DIISYTIHAR (RBAR)'] || 0).toLocaleString('ms-MY');
+        
+        let pDaerah = rowData['DAERAH'] || "";
         
         // Peta Koordinat
         const coordinateRaw = (rowData['LATLONG'] || "").toString().trim();
@@ -393,16 +366,8 @@
     async function loadData() {
         try {
             const response = await fetch(apiURL);
-            const jsonResp = await response.json();
+            allData = await response.json(); // Data terus dimuat turun sebagai Array biasa
             
-            // Cek Jika API V4 digunakan (Mempunyai "database" & "penyelaras")
-            if (jsonResp.database && jsonResp.penyelaras) {
-                allData = jsonResp.database;
-                penyelarasData = jsonResp.penyelaras;
-            } else if (Array.isArray(jsonResp)) {
-                allData = jsonResp; // Fallback jika masih guna API lama
-            }
-
             updateStats(allData);
 
             const filterDropdown = document.getElementById('daerahFilter');
@@ -438,7 +403,7 @@
 
             document.getElementById('loader').style.display = 'none';
         } catch (error) {
-            console.error(error); alert("Ralat bacaan API. Sila pastikan anda telah buat NEW DEPLOYMENT untuk membaca Sheet ke-2.");
+            console.error(error); alert("Ralat bacaan API. Sila periksa link API dan code JSON anda.");
             document.getElementById('loader').style.display = 'none';
         }
     }
