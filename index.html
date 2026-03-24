@@ -66,14 +66,12 @@
         }
 
         @media (max-width: 768px) {
-            /* Di Mobile, sembunyikan sidebar secara default */
             .sidebar {
                 margin-left: calc(var(--sidebar-width) * -1);
                 position: fixed;
                 height: 100vh;
                 overflow-y: auto;
             }
-            /* Kelas untuk tarik keluar di Mobile */
             .sidebar.show-mobile {
                 margin-left: 0;
             }
@@ -85,15 +83,39 @@
 
         .nav-link { color: #94a3b8; padding: 12px 20px; border-radius: 8px; margin: 5px 15px; transition: 0.3s; cursor: pointer; }
         .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,0.1); }
-        .card-stat { border: none; border-radius: 16px; padding: 24px; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        
+        /* Kad Statistik Dinamik & Responsif */
+        .card-stat { border: none; border-radius: 16px; padding: 12px; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         .card-stat:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+        .card-stat .icon-box { min-width: 35px; text-align: center; }
+        
+        .stat-title { 
+            font-size: 0.60rem; 
+            line-height: 1.1; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            color: #64748b; 
+            margin-bottom: 2px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Benarkan 2 baris maksimum (wrap) */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .stat-val { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        @media (min-width: 768px) {
+            .card-stat { padding: 24px; }
+            .card-stat .icon-box { min-width: 50px; }
+            .stat-title { font-size: 0.75rem; -webkit-line-clamp: 1; margin-bottom: 5px; }
+            .stat-val { font-size: 1.5rem; }
+        }
+
         .table-container { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); }
         .badge-aktif { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .badge-tidak-aktif { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        .icon-box { min-width: 50px; text-align: center; }
+        
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         #osmMap { border-radius: 16px; height: 75vh; width: 100%; z-index: 10; }
-        
         .toggle-btn { width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; border-radius: 8px; }
     </style>
 </head>
@@ -104,13 +126,12 @@
     <span class="ms-3 fw-semibold">Memuatkan Data KOSPEN Terbaru...</span>
 </div>
 
-<!-- Latar Belakang Gelap Khas Di Tab/Phone Apabila Menu Dibuka -->
+<!-- Latar Belakang Gelap Khas Di Tab/Phone -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <div class="wrapper">
-    <!-- MENU SISI (SIDEBAR) -->
+    <!-- MENU SISI -->
     <nav id="sidebar" class="sidebar pt-3">
-        <!-- Butang Pangkah di atas Sidebar Khas Untuk Mobile -->
         <div class="d-flex justify-content-end d-md-none px-3 mb-2">
             <button class="btn btn-sm btn-outline-light border-0" onclick="toggleSidebar()"><i class="fas fa-times fa-lg"></i></button>
         </div>
@@ -139,19 +160,18 @@
         </ul>
     </nav>
 
-    <!-- RUANG KANDUNGAN UTAMA (MAIN CONTENT) -->
+    <!-- RUANG KANDUNGAN UTAMA -->
     <div id="main-content" class="main-content p-3 p-md-4">
         
-        <!-- Header Panel Menempatkan Butang Hamburger (Toggle) -->
+        <!-- Header Panel Menempatkan Butang Hamburger -->
         <div class="bg-white p-3 shadow-sm d-flex align-items-center justify-content-between mb-4 rounded-3 border-start border-primary border-4">
             <div class="d-flex align-items-center">
-                <!-- BUTANG TOGGLE PIN/UNPIN -->
                 <button class="btn btn-primary shadow-sm toggle-btn me-3" id="sidebarCollapse" onclick="toggleSidebar()">
                     <i class="fas fa-bars fa-lg"></i>
                 </button>
-                <div>
-                    <h4 class="fw-bold mb-0 text-primary ms-1" id="page-title">Dashboard Pemantauan</h4>
-                    <span class="text-muted small ms-1 d-none d-md-inline-block"><i class="far fa-calendar-check me-1"></i> Mod Prestasi & Responsif Pintar Penuh</span>
+                <div class="overflow-hidden">
+                    <h4 class="fw-bold mb-0 text-primary ms-1 text-truncate" id="page-title">Dashboard Pemantauan</h4>
+                    <span class="text-muted small ms-1 d-none d-md-inline-block"><i class="far fa-calendar-check me-1"></i> UX Dioptimum & Koordinat Regex Lanjutan</span>
                 </div>
             </div>
             
@@ -162,99 +182,121 @@
 
         <!-- TAB UTAMA -->
         <div id="view-utama">
-            <div class="d-flex justify-content-end mb-4">
+            <div class="d-flex justify-content-end mb-3 mb-md-4">
                 <div class="col-12 col-md-4 col-lg-3">
-                    <!-- Dropdown Filter Daerah Dialih Ke Sini -->
-                    <select id="daerahFilter" class="form-select form-select-lg shadow-sm border-2 border-primary fw-semibold text-primary">
+                    <select id="daerahFilter" class="form-select shadow-sm border-2 border-primary fw-semibold text-primary">
                         <option value="">🎯 SEMUA DAERAH</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Kad Statistik Dinamik -->
-            <div class="row g-3 mb-4">
+            <!-- Kad Statistik (Saiz & Teks Diubahsuai utk Mobile) -->
+            <div class="row g-2 g-md-3 mb-4">
                 <div class="col-6 col-md-4 col-lg-3">
                     <div class="card card-stat bg-white h-100 border-top border-primary border-4">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-primary bg-opacity-10 rounded-3 me-3"><i class="fas fa-hospital-user fa-lg text-primary"></i></div>
-                            <div><h6 class="text-muted mb-0 small text-uppercase fw-semibold">Jumlah Lokaliti</h6><h4 class="fw-bold mb-0" id="stat-total">-</h4></div>
+                        <div class="d-flex align-items-center h-100">
+                            <div class="icon-box p-2 p-md-3 bg-primary bg-opacity-10 rounded-3 me-2 me-md-3"><i class="fas fa-hospital-user fa-lg text-primary"></i></div>
+                            <div class="w-100 min-w-0">
+                                <div class="stat-title" title="Jumlah Lokaliti">Jum. Lokaliti</div>
+                                <div class="stat-val" id="stat-total">-</div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-6 col-md-4 col-lg-3">
                     <div class="card card-stat bg-white h-100 border-top border-success border-4">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-success bg-opacity-10 rounded-3 me-3"><i class="fas fa-check-circle fa-lg text-success"></i></div>
-                            <div><h6 class="text-muted mb-0 small text-uppercase fw-semibold">Lokaliti Aktif</h6><h4 class="fw-bold mb-0" id="stat-aktif">-</h4></div>
+                        <div class="d-flex align-items-center h-100">
+                            <div class="icon-box p-2 p-md-3 bg-success bg-opacity-10 rounded-3 me-2 me-md-3"><i class="fas fa-check-circle fa-lg text-success"></i></div>
+                            <div class="w-100 min-w-0">
+                                <div class="stat-title" title="Lokaliti Aktif">Aktif</div>
+                                <div class="stat-val" id="stat-aktif">-</div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-6 col-md-4 col-lg-3">
                     <div class="card card-stat bg-white h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-warning bg-opacity-10 rounded-3 me-3"><i class="fas fa-hands-helping fa-lg text-warning"></i></div>
-                            <div><h6 class="text-muted mb-0 small text-uppercase fw-semibold">Sukarelawan</h6><h4 class="fw-bold mb-0" id="stat-vol">-</h4></div>
+                        <div class="d-flex align-items-center h-100">
+                            <div class="icon-box p-2 p-md-3 bg-warning bg-opacity-10 rounded-3 me-2 me-md-3"><i class="fas fa-hands-helping fa-lg text-warning"></i></div>
+                            <div class="w-100 min-w-0">
+                                <div class="stat-title" title="Sukarelawan">Sukarelawan</div>
+                                <div class="stat-val" id="stat-vol">-</div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-6 col-md-4 col-lg-3">
                     <div class="card card-stat bg-white h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-info bg-opacity-10 rounded-3 me-3"><i class="fas fa-users fa-lg text-info"></i></div>
-                            <div><h6 class="text-muted mb-0 small text-uppercase fw-semibold">Penduduk Semasa</h6><h4 class="fw-bold mb-0" id="stat-pop">-</h4></div>
+                        <div class="d-flex align-items-center h-100">
+                            <div class="icon-box p-2 p-md-3 bg-info bg-opacity-10 rounded-3 me-2 me-md-3"><i class="fas fa-users fa-lg text-info"></i></div>
+                            <div class="w-100 min-w-0">
+                                <div class="stat-title" title="Penduduk Semasa">Penduduk</div>
+                                <div class="stat-val" id="stat-pop">-</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-md-4 col-lg-4">
+                <!-- Barisan Kedua -->
+                <div class="col-4 col-md-4 col-lg-4">
                     <div class="card card-stat bg-white h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-secondary bg-opacity-10 rounded-3 me-3"><i class="fas fa-user-check fa-lg text-secondary"></i></div>
-                            <div><h6 class="text-muted mb-0 small text-uppercase fw-semibold">Penduduk &gt; 18 THN</h6><h4 class="fw-bold mb-0" id="stat-pop18">-</h4></div>
+                        <div class="d-flex align-items-center justify-content-center justify-content-md-start h-100 flex-column flex-md-row text-center text-md-start">
+                            <div class="icon-box p-2 p-md-3 bg-secondary bg-opacity-10 rounded-3 mb-1 mb-md-0 me-md-3"><i class="fas fa-user-check fa-lg text-secondary"></i></div>
+                            <div class="w-100 min-w-0">
+                                <div class="stat-title" title="Penduduk > 18 THN">Umur >18</div>
+                                <div class="stat-val" id="stat-pop18">-</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-md-4 col-lg-4">
+                <div class="col-4 col-md-4 col-lg-4">
                     <div class="card card-stat bg-white h-100">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-danger bg-opacity-10 rounded-3 me-3"><i class="fas fa-home fa-lg text-danger"></i></div>
-                            <div><h6 class="text-muted mb-0 small text-uppercase fw-semibold">Rumah Berpenghuni</h6><h4 class="fw-bold mb-0" id="stat-house">-</h4></div>
+                        <div class="d-flex align-items-center justify-content-center justify-content-md-start h-100 flex-column flex-md-row text-center text-md-start">
+                            <div class="icon-box p-2 p-md-3 bg-danger bg-opacity-10 rounded-3 mb-1 mb-md-0 me-md-3"><i class="fas fa-home fa-lg text-danger"></i></div>
+                            <div class="w-100 min-w-0">
+                                <div class="stat-title" title="Rumah Berpenghuni">Berpenghuni</div>
+                                <div class="stat-val" id="stat-house">-</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-12 col-lg-4">
+                <div class="col-4 col-md-4 col-lg-4">
                     <div class="card card-stat bg-white h-100 border-top border-dark border-4">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box p-3 bg-dark bg-opacity-10 rounded-3 me-3"><i class="fas fa-shield-virus fa-lg text-dark"></i></div>
-                            <div><h6 class="text-muted mb-0 small text-uppercase fw-semibold">Rumah RBAR</h6><h4 class="fw-bold mb-0" id="stat-rbar">-</h4></div>
+                        <div class="d-flex align-items-center justify-content-center justify-content-md-start h-100 flex-column flex-md-row text-center text-md-start">
+                            <div class="icon-box p-2 p-md-3 bg-dark bg-opacity-10 rounded-3 mb-1 mb-md-0 me-md-3"><i class="fas fa-shield-virus fa-lg text-dark"></i></div>
+                            <div class="w-100 min-w-0">
+                                <div class="stat-title" title="Rumah RBAR">Rumah RBAR</div>
+                                <div class="stat-val" id="stat-rbar">-</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="table-container mb-5 border-top border-primary border-4">
-                <h5 class="fw-bold mb-4 text-dark">Pangkalan Data Direktori KOSPEN Kedah</h5>
-                <table id="mainTable" class="table table-hover w-100">
-                    <thead class="table-light">
-                        <tr>
-                            <th>DAERAH</th>
-                            <th>NAMA LOKALITI</th>
-                            <th>TAHUN</th>
-                            <th>PENGERUSI</th>
-                            <th>STATUS</th>
-                            <th class="text-center">TINDAKAN</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
+                <h5 class="fw-bold mb-4 text-dark fs-6 fs-md-5">Pangkalan Data Direktori KOSPEN Kedah</h5>
+                <div class="table-responsive">
+                    <table id="mainTable" class="table table-hover w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th>DAERAH</th>
+                                <th>NAMA LOKALITI</th>
+                                <th>TAHUN</th>
+                                <th>PENGERUSI</th>
+                                <th>STATUS</th>
+                                <th class="text-center">TINDAKAN</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- TAB PETA LOKALITI -->
         <div id="view-lokaliti" style="display: none;">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 mt-md-2 mb-md-4 gap-3">
-                <!-- Tajuk Peta Dikecilkan Untuk Sesuaikan Smartphone -->
-                <span class="text-muted"><i class="fas fa-info-circle me-1"></i> Klik pada penanda untuk profil penuh.</span>
-                <span class="badge bg-primary px-4 py-2 fs-6 shadow-sm rounded-pill" id="map-counter"><i class="fas fa-spinner fa-spin me-1"></i> Memuatkan...</span>
+                <span class="text-muted small d-none d-md-inline-block"><i class="fas fa-info-circle me-1"></i> Klik pada penanda untuk paparan profil penuh.</span>
+                <span class="badge bg-primary px-4 py-2 fs-6 shadow-sm rounded-pill w-100 w-md-auto" id="map-counter"><i class="fas fa-spinner fa-spin me-1"></i> Memuatkan...</span>
             </div>
             
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-5 border-top border-primary border-4">
@@ -262,27 +304,24 @@
             </div>
         </div>
 
-        <p class="text-center text-muted small mt-4 mb-2">Sistem Dashboard KOSPEN Pintar Versi Mobile-Responsive</p>
+        <p class="text-center text-muted small mt-4 mb-2">Sistem Dashboard KOSPEN Peringkat JKN Kedah</p>
     </div> <!-- END MAIN CONTENT -->
 </div> <!-- END WRAPPER -->
 
-<!-- ==============================================
-     MODAL PROFIL (Kemas & Pantas)
-     ============================================== -->
+<!-- MODAL PROFIL -->
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header bg-primary text-white border-0">
-        <h5 class="modal-title fw-bold fs-5"><i class="fas fa-file-medical-alt me-2"></i> Profil Lengkap Lokaliti</h5>
+        <h5 class="modal-title fw-bold fs-6 fs-md-5"><i class="fas fa-file-medical-alt me-2"></i> Profil Lengkap Lokaliti</h5>
         <button type="button" class="btn-close btn-close-white shadow-sm" data-bs-dismiss="modal" aria-label="Tutup"></button>
       </div>
-      <div class="modal-body p-4 text-dark bg-white">
+      <div class="modal-body p-3 p-md-4 text-dark bg-white">
         <div class="row mb-4">
-          <!-- Info Utama -->
-          <div class="col-md-7 mb-4 mb-md-0 border-end">
+          <div class="col-md-7 mb-4 mb-md-0 border-md-end">
             <div class="bg-light rounded p-3 h-100">
                 <h6 class="text-primary mb-1 text-uppercase small fw-bold">Nama Lokaliti Berafiliasi</h6>
-                <h4 class="fw-bold mb-4 text-dark" id="modal-lokaliti">-</h4>
+                <h4 class="fw-bold mb-4 text-dark fs-5 fs-md-4" id="modal-lokaliti">-</h4>
                 
                 <h6 class="text-muted mb-1 text-uppercase small">Nama Pengerusi</h6>
                 <p class="fw-bold text-dark fs-6" id="modal-pengerusi">-</p>
@@ -292,7 +331,6 @@
             </div>
           </div>
           
-          <!-- Status -->
           <div class="col-md-5 d-flex flex-column justify-content-center">
              <div class="p-3 text-center">
                  <h6 class="text-muted mb-1 text-uppercase small fw-semibold">Status Pendaftaran</h6>
@@ -304,19 +342,17 @@
           </div>
         </div>
         
-        <!-- Statistik Demografi -->
         <h6 class="fw-bold border-bottom pb-2 mb-3 mt-4 text-secondary text-uppercase small">Demografi Kawasan Sedia Ada</h6>
-        <div class="row text-center mb-4">
-            <div class="col-6 col-md-2 mb-3"><div class="p-2 bg-info bg-opacity-10 rounded shadow-sm border border-info border-opacity-25 h-100"><div class="small fw-semibold text-info mb-1">Penduduk</div><div class="fw-bold fs-5 text-dark" id="modal-penduduk">-</div></div></div>
-            <div class="col-6 col-md-2 mb-3"><div class="p-2 bg-secondary bg-opacity-10 rounded shadow-sm border border-secondary border-opacity-25 h-100"><div class="small fw-semibold text-secondary mb-1">&gt;18 Thn</div><div class="fw-bold fs-5 text-dark" id="modal-penduduk18">-</div></div></div>
-            <div class="col-4 col-md-3 mb-3"><div class="p-2 bg-warning bg-opacity-10 rounded shadow-sm border border-warning border-opacity-25 h-100"><div class="small fw-semibold text-warning mb-1">Sukarelawan</div><div class="fw-bold fs-5 text-dark" id="modal-sukarelawan">-</div></div></div>
-            <div class="col-4 col-md-3 mb-3"><div class="p-2 bg-danger bg-opacity-10 rounded shadow-sm border border-danger border-opacity-25 h-100"><div class="small fw-semibold text-danger mb-1">Berpenghuni</div><div class="fw-bold fs-5 text-dark" id="modal-rumah">-</div></div></div>
-            <div class="col-4 col-md-2 mb-3"><div class="p-2 bg-dark bg-opacity-10 rounded shadow-sm border border-dark border-opacity-25 h-100"><div class="small fw-semibold text-dark mb-1">Rmh RBAR</div><div class="fw-bold fs-5 text-dark" id="modal-rbar">-</div></div></div>
+        <div class="row text-center mb-4 g-2">
+            <div class="col-4 col-md-2"><div class="p-2 bg-info bg-opacity-10 rounded shadow-sm border border-info border-opacity-25 h-100"><div class="small fw-semibold text-info mb-1 stat-title" style="-webkit-line-clamp: 1;">Penduduk</div><div class="fw-bold fs-6 fs-md-5 text-dark" id="modal-penduduk">-</div></div></div>
+            <div class="col-4 col-md-2"><div class="p-2 bg-secondary bg-opacity-10 rounded shadow-sm border border-secondary border-opacity-25 h-100"><div class="small fw-semibold text-secondary mb-1 stat-title" style="-webkit-line-clamp: 1;">Umur >18</div><div class="fw-bold fs-6 fs-md-5 text-dark" id="modal-penduduk18">-</div></div></div>
+            <div class="col-4 col-md-3"><div class="p-2 bg-warning bg-opacity-10 rounded shadow-sm border border-warning border-opacity-25 h-100"><div class="small fw-semibold text-warning mb-1 stat-title" style="-webkit-line-clamp: 1;">Sukarelawan</div><div class="fw-bold fs-6 fs-md-5 text-dark" id="modal-sukarelawan">-</div></div></div>
+            <div class="col-6 col-md-3 mt-2 mt-md-0"><div class="p-2 bg-danger bg-opacity-10 rounded shadow-sm border border-danger border-opacity-25 h-100"><div class="small fw-semibold text-danger mb-1 stat-title" style="-webkit-line-clamp: 1;">Berpenghuni</div><div class="fw-bold fs-6 fs-md-5 text-dark" id="modal-rumah">-</div></div></div>
+            <div class="col-6 col-md-2 mt-2 mt-md-0"><div class="p-2 bg-dark bg-opacity-10 rounded shadow-sm border border-dark border-opacity-25 h-100"><div class="small fw-semibold text-dark mb-1 stat-title" style="-webkit-line-clamp: 1;">Rmh RBAR</div><div class="fw-bold fs-6 fs-md-5 text-dark" id="modal-rbar">-</div></div></div>
         </div>
         
-        <!-- Butang Maps -->
         <div class="d-grid mt-3 px-2">
-            <a id="modal-map-btn" href="#" target="_blank" class="btn btn-outline-success btn-lg fw-bold shadow-sm">Buka Aplikasi Google Maps</a>
+            <a id="modal-map-btn" href="#" target="_blank" class="btn btn-outline-success btn-lg fw-bold shadow-sm" style="font-size: 0.95rem;"><i class="fas fa-search-location me-2"></i>Buka Aplikasi Google Maps</a>
         </div>
       </div>
     </div>
@@ -340,37 +376,26 @@
     let leafletMap;
     let mapInitialized = false;
 
-    // ==========================================
-    // Logik Mekanis Butang Pintar Tepi (Pin / Overlay Mobile)
-    // ==========================================
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         
         if (window.innerWidth <= 768) {
-            // Skrin Mobile
             sidebar.classList.toggle('show-mobile');
             overlay.classList.toggle('active');
         } else {
-            // Skrin Desktop (Collape/Unpin)
             sidebar.classList.toggle('collapsed');
-            
-            // Seluruh Dashboard Bertukar Saiz, Peta Leaflet Perlu Dimaklumkan (Invalidate)
             if(mapInitialized && leafletMap) {
                 setTimeout(() => leafletMap.invalidateSize(), 300);
             }
         }
     }
 
-    // ==========================================
-    // TUKAR TAB
-    // ==========================================
     function switchTab(viewId) {
         document.getElementById('btn-nav-utama').classList.remove('active');
         document.getElementById('btn-nav-lokaliti').classList.remove('active');
         document.getElementById(`btn-nav-${viewId}`).classList.add('active');
 
-        // Menukar Tajuk Dynamic Page Name
         const pageTitle = document.getElementById('page-title');
         
         if(viewId === 'utama') {
@@ -388,7 +413,6 @@
             } else setTimeout(() => leafletMap.invalidateSize(), 300);
         }
         
-        // Autotutup sidebar di skrin mobile sehabis tukar tab supaya tak kacau penglihatan
         if (window.innerWidth <= 768) {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -399,39 +423,43 @@
         }
     }
 
-    // PETA LEAFLET
+    // PETA LEAFLET DENGAN FORMULA LATLONG TERKINI (REGEX PINTAR)
     function initLeafletMap() {
         leafletMap = L.map('osmMap', { zoomControl: true }).setView([6.124500, 100.416200], 9);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: 'Data Peta &copy; OpenStreetMap contributors' }).addTo(leafletMap);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: 'Data Peta &copy; OpenStreetMap' }).addTo(leafletMap);
 
         let plottedMarkersCount = 0;
 
         allData.forEach(row => {
             let latText = (row['LATLONG'] || "").toString().trim();
             if (latText !== "") {
-                if (latText.includes(".100.")) { latText = latText.replace(".100.", ", 100."); }
-                if (latText.includes(".101.")) { latText = latText.replace(".101.", ", 101."); }
-                if (latText.includes(" 100.")) { latText = latText.replace(" 100.", ", 100."); }
+                // Membetulkan kesilapan ketukan bertindih "6.1234.100.456" kepada "6.1234 100.456"
+                latText = latText.replace(/\.100\./g, ' 100.').replace(/\.101\./g, ' 101.');
                 
-                let cx = latText.split(',');
-                if (cx.length >= 2) {
-                    let mapLat = parseFloat(cx[0].trim());
-                    let mapLng = parseFloat(cx[1].trim());
+                /*
+                 * REGEX: Sedut 2 nombor desimal yang diasingkan oleh mana-mana karakter (ruang/koma dsb)
+                 */
+                let matches = latText.match(/-?\d+\.\d+/g);
+                
+                if (matches && matches.length >= 2) {
+                    let mapLat = parseFloat(matches[0]);
+                    let mapLng = parseFloat(matches[1]);
 
-                    if (!isNaN(mapLat) && !isNaN(mapLng)) {
+                    // Sahkan kesahihan nombor koordinat negeri kawasan Kedah
+                    if (!isNaN(mapLat) && !isNaN(mapLng) && mapLat > 0 && mapLng > 90) {
                         let rowStatus = (row['STATUS'] || "").toUpperCase();
                         let nodeColor = (rowStatus.includes("KEKAL") || rowStatus.includes("BARU")) ? '#2563eb' : '#dc2626';
                         
                         let locationMarker = L.circleMarker([mapLat, mapLng], { radius: 8, fillColor: nodeColor, color: "#ffffff", weight: 2, opacity: 1, fillOpacity: 0.9 }).addTo(leafletMap);
 
-                        locationMarker.bindTooltip(`<div class="text-center px-1"><span class="fw-bold d-block text-primary">${row['LOKALITI KOSPEN']}</span><span class="small d-block text-muted border-top pt-1 mt-1">${row['DAERAH']}</span></div>`, { direction: 'top', className: 'shadow-sm rounded' });
+                        locationMarker.bindTooltip(`<div class="text-center px-1"><span class="fw-bold d-block text-primary" style="white-space:nowrap">${row['LOKALITI KOSPEN']}</span><span class="small d-block text-muted border-top pt-1 mt-1">${row['DAERAH']}</span></div>`, { direction: 'top', className: 'shadow-sm rounded' });
                         locationMarker.on('click', function() { openProfileModal(row['LOKALITI KOSPEN']); });
                         plottedMarkersCount++;
                     }
                 }
             }
         });
-        document.getElementById('map-counter').innerHTML = `<i class="fas fa-check-circle me-1"></i> ${plottedMarkersCount} Lokaliti Diplot`;
+        document.getElementById('map-counter').innerHTML = `<i class="fas fa-check-circle me-1"></i> ${plottedMarkersCount} Diplot`;
         setTimeout(() => leafletMap.invalidateSize(), 500);
     }
 
@@ -445,12 +473,10 @@
         document.getElementById('stat-rbar').innerText = filteredData.reduce((s, i) => s + (Number(i["BILANGAN RUMAH DIISYTIHAR (RBAR)"])||0), 0).toLocaleString('ms-MY');
     }
 
-    // FUNGSI MODAL PANTAS
     function openProfileModal(namaLokaliti) {
         const rowData = allData.find(item => item["LOKALITI KOSPEN"] === namaLokaliti);
         if(!rowData) return;
 
-        // Basic Info
         document.getElementById('modal-lokaliti').innerText = rowData['LOKALITI KOSPEN'] || '-';
         document.getElementById('modal-pengerusi').innerHTML = `<i class="fas fa-user-circle me-2 text-primary opacity-75"></i> ` + (rowData['NAMA PENGERUSI'] || '-');
         document.getElementById('modal-daerah').innerHTML = `<i class="fas fa-map-pin me-2 text-danger opacity-75"></i> ` + (rowData['DAERAH'] || '-');
@@ -460,7 +486,6 @@
         let badgeStyle = (statusVal.includes("KEKAL") || statusVal.includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
         document.getElementById('modal-status').innerHTML = `<span class="badge ${badgeStyle} px-4 py-2 lh-base fs-6 shadow-sm border rounded-pill">${statusVal || '-'}</span>`;
 
-        // Kad Statistik Modal
         document.getElementById('modal-penduduk').innerText = (rowData['BILANGAN PENDUDUK (SEMASA)'] || 0).toLocaleString('ms-MY');
         document.getElementById('modal-penduduk18').innerText = (rowData['BILANGAN PENDUDUK >18'] || 0).toLocaleString('ms-MY');
         document.getElementById('modal-sukarelawan').innerText = (rowData['BILANGAN SUKARELAWAN'] || 0).toLocaleString('ms-MY');
@@ -469,7 +494,6 @@
         
         let pDaerah = rowData['DAERAH'] || "";
         
-        // Peta Koordinat
         const coordinateRaw = (rowData['LATLONG'] || "").toString().trim();
         const mapExternalLinkBtn = document.getElementById('modal-map-btn');
         if (coordinateRaw !== "") {
@@ -487,7 +511,6 @@
         detailModal.show();
     }
 
-    // TARIK API
     async function loadData() {
         try {
             const response = await fetch(apiURL);
@@ -505,15 +528,15 @@
             table = $('#mainTable').DataTable({
                 data: allData,
                 columns: [
-                    { data: 'DAERAH', className: 'align-middle fw-semibold text-secondary' }, { data: 'LOKALITI KOSPEN', className: 'align-middle fw-bold text-dark' }, { data: 'TAHUN PENUBUHAN', className: 'align-middle text-center' }, { data: 'NAMA PENGERUSI', className: 'align-middle' },
+                    { data: 'DAERAH', className: 'align-middle fw-semibold text-secondary' }, { data: 'LOKALITI KOSPEN', className: 'align-middle fw-bold text-dark' }, { data: 'TAHUN PENUBUHAN', className: 'align-middle text-center d-none d-md-table-cell' }, { data: 'NAMA PENGERUSI', className: 'align-middle d-none d-md-table-cell' },
                     { data: 'STATUS', className: 'align-middle text-center', render: function(val) {
                             let bClass = ((val||"").toUpperCase().includes("KEKAL") || (val||"").toUpperCase().includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
                             return `<span class="badge ${bClass} px-3 py-2 lh-base shadow-sm">${val || '-'}</span>`;
                     }},
                     { data: null, orderable: false, className: 'align-middle text-center', render: function(row) {
-                            return `<button class="btn btn-sm btn-outline-primary fw-bold shadow-sm custom-detail-btn px-3" data-name="${encodeURIComponent(row['LOKALITI KOSPEN'])}"><i class="fas fa-expand-arrows-alt me-1"></i> Profil</button>`;
+                            return `<button class="btn btn-sm btn-outline-primary fw-bold shadow-sm custom-detail-btn px-2 px-md-3" data-name="${encodeURIComponent(row['LOKALITI KOSPEN'])}"><i class="fas fa-expand-arrows-alt me-md-1"></i> <span class="d-none d-md-inline">Profil</span></button>`;
                     }}
-                ], responsive: true, language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/ms.json", search: "Carian Pantas:", lengthMenu: "Papar _MENU_ direktori" }
+                ], responsive: true, language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/ms.json", search: "Cari:", lengthMenu: "Papar _MENU_" }
             });
 
             $('#mainTable tbody').on('click', '.custom-detail-btn', function () {
