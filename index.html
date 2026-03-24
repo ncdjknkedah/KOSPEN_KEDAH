@@ -61,6 +61,7 @@
         }
 
         .badge-aktif { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .badge-tidak-aktif { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
         .loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.8); display: flex; justify-content: center;
@@ -116,7 +117,7 @@
                                 <i class="fas fa-check-circle fa-2x text-success"></i>
                             </div>
                             <div>
-                                <h6 class="text-muted mb-0">Lokaliti Aktif</h6>
+                                <h6 class="text-muted mb-0">Lokaliti Aktif (Kekal/Baru)</h6>
                                 <h2 class="fw-bold mb-0" id="stat-aktif">0</h2>
                             </div>
                         </div>
@@ -164,8 +165,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // 1. GANTIKAN URL DI BAWAH DENGAN WEB APP URL ANDA
-    const apiURL = "https://script.google.com/macros/s/AKfycbzYvf7hi2-vaav8eHVtKb1VqAcp4eR6Ta4VFTu-Ai8r2fdMh8MUo023NNHDGKSSRN5iWw/exec";
+    // 1. GANTIKAN URL DI BAWAH DENGAN WEB APP URL ANDA SELEPAS DEPLOY SEMULA
+    const apiURL = "https://script.google.com/macros/s/AKfycbyrFRR51MTMY_bgqJLpemyLsJ11vt7vyFgpxJl_EGjAGqlVwurnKC4-L4o0JtaWta4cQw/exec";
 
     async function loadData() {
         try {
@@ -174,11 +175,16 @@
             
             // Update Statistik
             document.getElementById('stat-total').innerText = data.length;
-            const aktifCount = data.filter(item => item["STATUS"] === "AKTIF").length;
+            
+            // Pengiraan Lokaliti Aktif (Dalam Google Sheet status adalah KEKAL, BARU, BARU/GANTI)
+            const aktifCount = data.filter(item => {
+                let status = (item["STATUS"] || "").toUpperCase();
+                return status.includes("KEKAL") || status.includes("BARU");
+            }).length;
             document.getElementById('stat-aktif').innerText = aktifCount;
             
-            // Kira Jumlah Sukarelawan (Pastikan header di Sheet adalah 'BIL SUKARELAWAN')
-            const totalVol = data.reduce((sum, item) => sum + (Number(item["BIL SUKARELAWAN"]) || 0), 0);
+            // Kira Jumlah Sukarelawan (Dalam Sheet nama kolum adalah 'BILANGAN SUKARELAWAN')
+            const totalVol = data.reduce((sum, item) => sum + (Number(item["BILANGAN SUKARELAWAN"]) || 0), 0);
             document.getElementById('stat-vol').innerText = totalVol;
 
             // Initialize DataTable
@@ -186,20 +192,21 @@
                 data: data,
                 columns: [
                     { data: 'DAERAH' },
-                    { data: 'NAMA LOKALITI' },
-                    { data: 'TAHUN DITUBUHKAN' },
+                    { data: 'LOKALITI KOSPEN' },  // Diperbetulkan dari 'NAMA LOKALITI'
+                    { data: 'TAHUN PENUBUHAN' },  // Diperbetulkan dari 'TAHUN DITUBUHKAN'
                     { data: 'NAMA PENGERUSI' },
                     { 
                         data: 'STATUS',
                         render: function(val) {
-                            let badgeClass = val === 'AKTIF' ? 'badge-aktif' : 'bg-light text-muted';
+                            let status = (val || "").toUpperCase();
+                            let badgeClass = (status.includes("KEKAL") || status.includes("BARU")) ? 'badge-aktif' : 'badge-tidak-aktif';
                             return `<span class="badge ${badgeClass} px-3 py-2">${val}</span>`;
                         }
                     },
                     { 
                         data: null,
                         render: function(row) {
-                            return `<button class="btn btn-sm btn-outline-primary shadow-sm" onclick="alert('Profil: ${row['NAMA LOKALITI']}')">Detail</button>`;
+                            return `<button class="btn btn-sm btn-outline-primary shadow-sm" onclick="alert('Profil: ${row['LOKALITI KOSPEN']}')">Detail</button>`;
                         }
                     }
                 ],
@@ -214,6 +221,7 @@
         } catch (error) {
             console.error("Gagal memuatkan data:", error);
             alert("Ralat memuatkan data. Sila pastikan URL API betul.");
+            document.getElementById('loader').style.display = 'none';
         }
     }
 
