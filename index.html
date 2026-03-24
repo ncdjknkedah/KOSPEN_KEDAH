@@ -317,7 +317,7 @@
 
 <script>
     // GANTIKAN URL DI BAWAH DENGAN WEB APP URL ANDA
-    const apiURL = "https://script.google.com/macros/s/AKfycbzYvf7hi2-vaav8eHVtKb1VqAcp4eR6Ta4VFTu-Ai8r2fdMh8MUo023NNHDGKSSRN5iWw/exec";
+    const apiURL = "https://script.google.com/macros/s/AKfycbwQCzkjq4cKlgsQq1BXWzZUPHMuYE7cdfB4J_WOrhgK23IzmENEtvnITuWCIrCEHrifbQ/exec";
     
     let allData = [];
     let table;
@@ -373,7 +373,7 @@
         document.getElementById('modal-status').innerHTML = `<span class="badge ${badgeClass} px-3 py-2 lh-base fs-6">${status || '-'}</span>`;
 
         // Aturan Koordinat & Pautan Google Maps
-        const latLong = (row['LATITUDE'] || "").toString().trim();
+        const latLong = (row['LATLONG'] || "").toString().trim();
         const mapBtn = document.getElementById('modal-map-btn');
         
         if (latLong !== "") {
