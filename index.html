@@ -291,8 +291,8 @@
         else if(viewId === 'lokaliti') {
             document.getElementById('view-lokaliti').style.display = 'block';
             document.getElementById('btn-nav-lokaliti').classList.add('active');
-            pageTitle.innerText = "Peta Lokaliti";
-            pageSubtitle.innerHTML = `<i class="fas fa-satellite me-1"></i> Sistem Geolokasi Pintar`;
+            pageTitle.innerText = "PETA LOKALITI";
+            pageSubtitle.innerHTML = `<i class="fas fa-satellite me-1"></i> Taburan Lokaliti KOSPEN Kedah`;
             
             if(!mapInitialized) { initLeafletMap(); mapInitialized = true; } 
             else setTimeout(() => leafletMap.invalidateSize(), 300);
