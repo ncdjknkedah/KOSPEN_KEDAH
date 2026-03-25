@@ -114,7 +114,7 @@
                 <small class="text-uppercase text-white-50 fw-bold tracking-widest" style="font-size:0.75rem;">Analisa Saringan Kesihatan</small>
             </li>
             <li class="nav-item">
-                <a class="nav-link external-link" href=https://sites.google.com/moh.gov.my/nhsikedah/analisa-nhsi-kedah-2026?authuser=0"" target="_blank" onclick="toggleSidebarMobileOnly()">
+                <a class="nav-link external-link" href="https://sites.google.com/moh.gov.my/nhsikedah/analisa-nhsi-kedah-2026?authuser=0" target="_blank" onclick="toggleSidebarMobileOnly()">
                     <i class="fas fa-external-link-alt me-2 text-warning opacity-75"></i> Analisa Saringan <span class="badge bg-warning text-dark ms-1 rounded-pill">2026</span>
                 </a>
             </li>
@@ -131,13 +131,13 @@
         
         <!-- Header Panel Menempatkan Butang Hamburger -->
         <div class="bg-white p-3 shadow-sm d-flex align-items-center justify-content-between mb-4 rounded-3 border-start border-primary border-4">
-            <div class="d-flex align-items-center">
-                <button class="btn btn-primary shadow-sm toggle-btn me-3" id="sidebarCollapse" onclick="toggleSidebar()">
+            <div class="d-flex align-items-center w-100">
+                <button class="btn btn-primary shadow-sm toggle-btn me-3 flex-shrink-0" id="sidebarCollapse" onclick="toggleSidebar()">
                     <i class="fas fa-bars fa-lg"></i>
                 </button>
-                <div class="overflow-hidden">
-                    <h4 class="fw-bold mb-0 text-primary ms-1 text-truncate" id="page-title">DASHBOARD KOSPEN KEDAH</h4>
-                    <span class="text-muted small ms-1 d-none d-md-inline-block" id="page-subtitle"><i class="far fa-calendar-check me-1"></i> ver 1.0</span>
+                <div class="overflow-hidden flex-grow-1">
+                    <h4 class="fw-bold mb-0 text-primary ms-1 fs-5 fs-md-4 text-wrap" style="line-height: 1.3;" id="page-title">DASHBOARD KOSPEN KEDAH</h4>
+                    <div class="text-muted small ms-1 mt-1" id="page-subtitle"><i class="far fa-calendar-check me-1"></i> ver 1.0</div>
                 </div>
             </div>
             
@@ -161,10 +161,10 @@
             <div class="row g-2 g-md-3 mb-4">
                 <div class="col-6 col-md-4 col-lg-3"><div class="card card-stat bg-white h-100 border-top border-primary border-4"><div class="d-flex align-items-center h-100"><div class="icon-box p-2 p-md-3 bg-primary bg-opacity-10 rounded-3 me-2 me-md-3"><i class="fas fa-hospital-user fa-lg text-primary"></i></div><div class="w-100 min-w-0"><div class="stat-title">Jum. Lokaliti</div><div class="stat-val" id="stat-total">-</div></div></div></div></div>
                 <div class="col-6 col-md-4 col-lg-3"><div class="card card-stat bg-white h-100 border-top border-success border-4"><div class="d-flex align-items-center h-100"><div class="icon-box p-2 p-md-3 bg-success bg-opacity-10 rounded-3 me-2 me-md-3"><i class="fas fa-check-circle fa-lg text-success"></i></div><div class="w-100 min-w-0"><div class="stat-title">Aktif</div><div class="stat-val" id="stat-aktif">-</div></div></div></div></div>
-                <div class="col-6 col-md-4 col-lg-3"><div class="card card-stat bg-white h-100"><div class="d-flex align-items-center h-100"><div class="icon-box p-2 p-md-3 bg-warning bg-opacity-10 rounded-3 me-2 me-md-3"><i class="fas fa-hands-helping fa-lg text-warning"></i></div><div class="w-100 min-w-0"><div class="stat-title">Sukarelawan</div><div class="stat-val" id="stat-vol">-</div></div></div></div></div>
-                <div class="col-6 col-md-4 col-lg-3"><div class="card card-stat bg-white h-100"><div class="d-flex align-items-center h-100"><div class="icon-box p-2 p-md-3 bg-info bg-opacity-10 rounded-3 me-2 me-md-3"><i class="fas fa-users fa-lg text-info"></i></div><div class="w-100 min-w-0"><div class="stat-title">Penduduk</div><div class="stat-val" id="stat-pop">-</div></div></div></div></div>
-                <div class="col-4 col-md-4 col-lg-4"><div class="card card-stat bg-white h-100"><div class="d-flex align-items-center justify-content-center justify-content-md-start h-100 flex-column flex-md-row text-center text-md-start"><div class="icon-box p-2 p-md-3 bg-secondary bg-opacity-10 rounded-3 mb-1 mb-md-0 me-md-3"><i class="fas fa-user-check fa-lg text-secondary"></i></div><div class="w-100 min-w-0"><div class="stat-title">Umur ≥18</div><div class="stat-val" id="stat-pop18">-</div></div></div></div></div>
-                <div class="col-4 col-md-4 col-lg-4"><div class="card card-stat bg-white h-100"><div class="d-flex align-items-center justify-content-center justify-content-md-start h-100 flex-column flex-md-row text-center text-md-start"><div class="icon-box p-2 p-md-3 bg-danger bg-opacity-10 rounded-3 mb-1 mb-md-0 me-md-3"><i class="fas fa-home fa-lg text-danger"></i></div><div class="w-100 min-w-0"><div class="stat-title">Rumah Berpenghuni</div><div class="stat-val" id="stat-house">-</div></div></div></div></div>
+                <div class="col-6 col-md-4 col-lg-3"><div class="card card-stat bg-white h-100 border-top border-warning border-4"><div class="d-flex align-items-center h-100"><div class="icon-box p-2 p-md-3 bg-warning bg-opacity-10 rounded-3 me-2 me-md-3"><i class="fas fa-hands-helping fa-lg text-warning"></i></div><div class="w-100 min-w-0"><div class="stat-title">Sukarelawan</div><div class="stat-val" id="stat-vol">-</div></div></div></div></div>
+                <div class="col-6 col-md-4 col-lg-3"><div class="card card-stat bg-white h-100 border-top border-info border-4"><div class="d-flex align-items-center h-100"><div class="icon-box p-2 p-md-3 bg-info bg-opacity-10 rounded-3 me-2 me-md-3"><i class="fas fa-users fa-lg text-info"></i></div><div class="w-100 min-w-0"><div class="stat-title">Penduduk</div><div class="stat-val" id="stat-pop">-</div></div></div></div></div>
+                <div class="col-4 col-md-4 col-lg-4"><div class="card card-stat bg-white h-100 border-top border-secondary border-4"><div class="d-flex align-items-center justify-content-center justify-content-md-start h-100 flex-column flex-md-row text-center text-md-start"><div class="icon-box p-2 p-md-3 bg-secondary bg-opacity-10 rounded-3 mb-1 mb-md-0 me-md-3"><i class="fas fa-user-check fa-lg text-secondary"></i></div><div class="w-100 min-w-0"><div class="stat-title">Umur ≥18</div><div class="stat-val" id="stat-pop18">-</div></div></div></div></div>
+                <div class="col-4 col-md-4 col-lg-4"><div class="card card-stat bg-white h-100 border-top border-danger border-4"><div class="d-flex align-items-center justify-content-center justify-content-md-start h-100 flex-column flex-md-row text-center text-md-start"><div class="icon-box p-2 p-md-3 bg-danger bg-opacity-10 rounded-3 mb-1 mb-md-0 me-md-3"><i class="fas fa-home fa-lg text-danger"></i></div><div class="w-100 min-w-0"><div class="stat-title">Rumah Berpenghuni</div><div class="stat-val" id="stat-house">-</div></div></div></div></div>
                 <div class="col-4 col-md-4 col-lg-4"><div class="card card-stat bg-white h-100 border-top border-dark border-4"><div class="d-flex align-items-center justify-content-center justify-content-md-start h-100 flex-column flex-md-row text-center text-md-start"><div class="icon-box p-2 p-md-3 bg-dark bg-opacity-10 rounded-3 mb-1 mb-md-0 me-md-3"><i class="fas fa-shield-virus fa-lg text-dark"></i></div><div class="w-100 min-w-0"><div class="stat-title">Rumah RBAR</div><div class="stat-val" id="stat-rbar">-</div></div></div></div></div>
             </div>
 
@@ -212,18 +212,18 @@
                 <h6 class="text-primary mb-1 text-uppercase small fw-bold">Nama Lokaliti</h6>
                 <h4 class="fw-bold mb-4 text-dark fs-5 fs-md-4" id="modal-lokaliti">-</h4>
                 
-                <h6 class="text-muted mb-1 text-uppercase small">Nama Pengerusi</h6>
+                <h6 class="text-primary mb-1 text-uppercase small fw-bold">Nama Pengerusi</h6>
                 <p class="fw-bold text-dark fs-6" id="modal-pengerusi">-</p>
                 
-                <h6 class="text-muted mb-1 mt-3 text-uppercase small">Daerah</h6>
+                <h6 class="text-primary mb-1 mt-3 text-uppercase small fw-bold">Daerah</h6>
                 <p class="fw-bold text-dark mb-0 fs-6" id="modal-daerah">-</p>
             </div>
           </div>
           <div class="col-md-5 d-flex flex-column justify-content-center">
              <div class="p-3 text-center">
-                 <h6 class="text-muted mb-1 text-uppercase small fw-semibold">Tahun Penubuhan</h6>
+                 <h6 class="text-primary mb-1 text-uppercase small fw-bold">Tahun Penubuhan</h6>
                  <p class="fw-bold text-dark fs-5 mb-0" id="modal-tahun">-</p> <br>     
-                 <h6 class="text-muted mb-1 text-uppercase small fw-semibold">Status Pendaftaran</h6>
+                 <h6 class="text-primary mb-1 text-uppercase small fw-bold">Status Pendaftaran</h6>
                  <div class="mb-3" id="modal-status">-</div>
 
              </div>
